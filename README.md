@@ -1,15 +1,13 @@
-# 👋 Привет, я Дархан
+#                            Приветствую на моей странице)
 
-## 🚀 О себе
+##                                     Обо мне
 
-Разработчик, который работает над разными проектами и изучает всех и вся)
+Я разработчик, который работает над разными проектами и изучает всех и вся)
 Интересуюсь backend‑разработкой, UX|UI дизайнами, созданием сайтов и веб сервисов.
 
 ---
 
-## 🛠️ Мой стек технологий
-
-### 💻 Языки программирования
+###                             Языки программирования
 
 ![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge\&logo=java\&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge\&logo=python\&logoColor=white)
@@ -23,14 +21,14 @@
 
 ---
 
-## 🔥 Сейчас изучаю
+##  Сейчас изучаю
 
 * Архитектуру backend‑приложений
 * Язык Goland
 
 ---
 
-## 📫 Связь со мной
+##  Мои контакты
 
 * LinkedIn: [Darhan Semiatov](https://www.linkedin.com/in/darhan-semiyatov-a5171b3a8?utm_source=share_via&utm_content=profile&utm_medium=member_ios)
 * Email: Semiatov@mail.ru
