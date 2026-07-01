@@ -11,7 +11,7 @@
 ```
 
 ### `$ whoami`
-> Backend developer · NARXOZ University, 3rd year · QazCode & Beeline
+> Backend developer · NARXOZ University, 4rd year · QazCode & Beeline
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/darhan-semiyatov-a5171b3a8)
 [![Email](https://img.shields.io/badge/Email-EA4335?style=flat-square&logo=gmail&logoColor=white)](mailto:Semiatov@mail.ru)
@@ -28,7 +28,7 @@
 name:     Darhan Semiatov
 alias:    DarkIL1ght
 location: Kazakhstan 🇰🇿
-study:    NARXOZ University — 3rd year
+study:    NARXOZ University — 4rd year
 work:     QazCode & Beeline
 focus:    Backend development · UX/UI · Web services
 status:   Open to collaboration 🚀
