@@ -1,6 +1,10 @@
 <!-- Header -->
 <div align="center">
 
+<img src="assets/profile-scan.svg" alt="Profile scan: animated ASCII portrait and system info" width="100%"/>
+
+<img src="assets/contribution-activity.svg" alt="Contribution activity with a tiny space ship" width="100%"/>
+
 ```
   ██████╗   █████╗  ██████╗  ██╗  ██╗   █████╗  ███╗   ██╗
   ██╔══██╗ ██╔══██╗ ██╔══██╗ ██║  ██║  ██╔══██╗ ████╗  ██║
