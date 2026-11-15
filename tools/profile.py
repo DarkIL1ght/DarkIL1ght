@@ -1,255 +1,240 @@
-"""Generates assets/profile.svg: the whole profile as one animated picture.
+"""Generates the profile pictures in assets/light and assets/dark.
 
-Night steppe, falling snow over the full height, and the national ornament
-as dividers. The ornament is taken from the flag of Kazakhstan (tools/kz-flag.svg, Wikimedia
-Commons, public domain).
+Style: a monochrome "technical document" with numbered sections, plus a
+neofetch-like card on top. Animation is deliberately light: a blinking cursor,
+a pulsing status dot and moving dashes on the system map.
 
     python tools/profile.py
 
-Edit the CONTENT block below and re-run; nothing else needs touching.
+Edit the CONTENT block and re-run; README.md references the files by name.
 """
 
-import random
-import re
+import math
 from pathlib import Path
 from xml.sax.saxutils import escape
 
 ROOT = Path(__file__).resolve().parent.parent
 
 # ---------------------------------------------------------------- CONTENT ---
-NAME = "Darhan Semiatov"
-ROLE = "Go backend · AI/LLM engineering"
-PLACE = "Almaty, Kazakhstan"
+HANDLE = "darhan@almaty"
+INFO = [
+    ("Name", "Darhan Semiatov"),
+    ("Role", "Go backend · AI/LLM engineering"),
+    ("Location", "Almaty, Kazakhstan"),
+    ("Uni", "Narxoz University, 4th year"),
+    ("Work", "Intern @ QazCode"),
+    ("Main", "Go, PostgreSQL, Docker, Linux"),
+    ("ML", "Python, PyTorch, ONNX, LLM APIs"),
+    ("Shipped", "Tropa (live), IELTS scorer, F1 model"),
+    ("Status", "open to Go / AI roles from 2027"),
+]
 
-ABOUT = (
-    "I build Go services that run in production and the ML/LLM pieces around "
-    "them: scoring models, LLM integrations, Telegram bots. 4th-year student "
-    "at Narxoz University, intern at QazCode. Open to Go / AI roles from 2027."
-)
+# Alatau ridge over Almaty, in the spirit of a neofetch distro logo.
+ART = [
+    r"            /\               ",
+    r"           /**\      /\      ",
+    r"     /\   /    \    /**\     ",
+    r"    /**\ /      \  /    \    ",
+    r"   /    \   /\   \/      \   ",
+    r"  /      \ /  \   \       \  ",
+    r" /   /\   /    \   \   /\  \ ",
+    r"/___/__\_/______\___\_/__\__\ ",
+    r"  .  almaty  .  alatau  .  ",
+]
+
+WHOAMI = [
+    "Go backend developer who also ships the ML/LLM parts.",
+    "I build services that run in production: Postgres, Docker,",
+    "CI, backups, Telegram integrations, streaming LLM APIs.",
+    "4th-year student at Narxoz University, intern at QazCode.",
+]
+
+# System map: the centre node and what is around it (label, sublabel).
+CORE = ("DARHAN.SYS", "go services + ml models")
+NODES = [
+    ("TROPA", "go · postgres · sse"),
+    ("TELEGRAM", "bots · notifications"),
+    ("ORACLE ARM VM", "docker · caddy · backups"),
+    ("GITHUB ACTIONS", "ci · race tests"),
+    ("LLM APIs", "claude · gemini · ollama"),
+    ("IELTS SCORER", "deberta-v3 · onnx"),
+    ("F1 MODEL", "xgboost · pandas"),
+    ("HACKATHONS", "decentrathon 6.0"),
+]
 
 PROJECTS = [
-    ("Tropa", "live",
-     "A map of places around Almaty for going out with friends, with real users. "
-     "Go, PostgreSQL, SSE chats, Telegram notifications, rate-limited auth, "
-     "admin moderation. Self-hosted: Docker and Caddy on an Oracle ARM VM, nightly backups."),
-    ("IELTS writing scorer", "ML",
-     "A fine-tuned DeBERTa-v3 regressor that scores essays on 4 criteria, "
-     "exported to ONNX and served by a Python service that a Go app calls. "
-     "The LLM only explains the scores. It does not grade."),
-    ("F1 race winner prediction", "ML",
-     "An ML study on historical Formula 1 data: preprocessing, XGBoost, a custom "
-     "race-level winner accuracy metric, feature importance and a temporal learning curve."),
-    ("Decentrathon 6.0", "hackathon",
-     "Captained a team at a hackathon with about 1,500 participants. In 2 days "
-     "we built a support copilot for a mobile operator: ticket category and "
-     "priority classification, answers grounded in the knowledge base."),
+    ("01", "TROPA", "live",
+     ["Map of places around Almaty for going out with friends; real users.",
+      "SSE chats, Telegram notifications, rate-limited auth, moderation."],
+     "go · postgresql · pgx · docker · caddy"),
+    ("02", "IELTS WRITING SCORER", "ml",
+     ["Fine-tuned DeBERTa-v3 scores essays on 4 criteria; an ONNX service",
+      "called from Go. The LLM only explains the scores, it never grades."],
+     "python · pytorch · onnx runtime · go"),
+    ("03", "F1 RACE WINNER PREDICTION", "ml",
+     ["Historical Formula 1 data: preprocessing, XGBoost, a custom",
+      "race-level winner accuracy, feature importance, learning curve."],
+     "python · xgboost · pandas"),
+    ("04", "DECENTRATHON 6.0", "hackathon",
+     ["Team captain, ~1,500 participants. A support copilot for a mobile",
+      "operator: ticket category and priority, grounded answers."],
+     "python · llm · classification"),
 ]
 
 STACK = [
-    ("Main", ["Go", "PostgreSQL", "Docker", "Linux", "GitHub Actions", "Caddy"]),
-    ("AI / ML", ["Python", "PyTorch", "ONNX Runtime", "LLM APIs"]),
-    ("Also", ["Java", "JavaScript", "SQL"]),
+    ("BACKEND", "Go · PostgreSQL · REST · SSE · pgx"),
+    ("INFRA", "Docker · Linux · Caddy · GitHub Actions"),
+    ("ML / AI", "Python · PyTorch · ONNX · LLM APIs"),
+    ("ALSO", "Java · JavaScript · SQL"),
+    ("PRACTICE", "layered design · tests on every layer · ADRs · CI"),
 ]
 
-HOW_I_WORK = (
-    "Layered architecture (domain → application → adapters), tests on every "
-    "layer, an architecture.md in every repo, and CI before merge."
-)
+STATUS = "open to Go / AI roles from 2027"
 # ----------------------------------------------------------------------------
 
-W = 1000
-PAD = 60
-GOLD = "url(#gold)"
-FONT = "'Segoe UI',Ubuntu,'Helvetica Neue',Arial,sans-serif"
+W = 900
+PAD = 44
+MONO = "ui-monospace,SFMono-Regular,'JetBrains Mono',Consolas,Menlo,monospace"
+
+THEMES = {
+    "dark": {"bg": "#0d1117", "fg": "#e6edf3", "dim": "#8b949e", "faint": "#30363d",
+             "panel": "#161b22", "accent": "#d4a94a"},
+    "light": {"bg": "#ffffff", "fg": "#1f2328", "dim": "#59636e", "faint": "#d1d9e0",
+              "panel": "#f6f8fa", "accent": "#9a6b12"},
+}
 
 
-def wrap(text, size, width):
-    """Greedy word wrap by an average glyph width; good enough for Latin text."""
-    limit = int(width / (size * 0.5))
-    lines, line = [], ""
-    for word in text.split():
-        if line and len(line) + 1 + len(word) > limit:
-            lines.append(line)
-            line = word
-        else:
-            line = f"{line} {word}".strip()
-    return lines + [line] if line else lines
+def svg(h, t, body, css=""):
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {h}" width="{W}" height="{h}">'
+            f'<style>text{{font-family:{MONO}}}{css}'
+            '@media (prefers-reduced-motion:reduce){*{animation:none!important}}</style>'
+            f'<rect width="{W}" height="{h}" fill="{t["bg"]}"/>{body}</svg>\n')
 
 
-def text(x, y, s, size, fill, weight=400, extra=""):
-    return (f'<text x="{x}" y="{y}" font-size="{size}" font-weight="{weight}" '
-            f'fill="{fill}" {extra}>{escape(s)}</text>')
+def txt(x, y, s, size, fill, weight=400, extra=""):
+    return (f'<text x="{x}" y="{y}" font-size="{size}" font-weight="{weight}" fill="{fill}" '
+            f'xml:space="preserve" {extra}>{escape(s)}</text>')
 
 
-def flag_art():
-    """The flag drawing without the sky-blue field and the sun, recoloured via currentColor."""
-    s = (ROOT / "tools" / "kz-flag.svg").read_text(encoding="utf-8")
-    inner = s[s.find(">") + 1:s.rfind("</svg>")]
-    inner = inner.replace('<path fill="#00abc2" d="M0 0h1000v500H0z"/>', "")
-    start = inner.find('<g transform="matrix(.5 0 0 .5 540.236 210)">')
-    depth, i = 0, start
-    while True:
-        o, c = inner.find("<g", i), inner.find("</g>", i)
-        if o != -1 and o < c:
-            depth, i = depth + 1, o + 2
-        else:
-            depth, i = depth - 1, c + 4
-            if depth == 0:
-                break
-    inner = inner[:start] + inner[i:]
-    inner = inner.replace('fill="#ffec2d"', "").replace("#ffec2d", "currentColor")
-    inner = inner.replace("xlink:href", "href")
-    return re.sub(r"\s+", " ", inner)
+def heading(t, num, title, path, y=46):
+    return (txt(PAD, y, num, 40, t["faint"], 700)
+            + txt(PAD + 64, y - 8, " ".join(title.upper()), 15, t["dim"], 700)
+            + txt(W - PAD, y - 8, path, 13, t["dim"], 400, 'text-anchor="end"'))
 
 
-
-def ornament_band(y, opacity=0.55):
-    """The flag's vertical ornament (28..92 x 25..475) laid on its side and repeated."""
-    seg_w, seg_h = 450 * 0.3, 64 * 0.3  # scaled band piece
-    out = [f'<g opacity="{opacity}">']
-    n = int((W - 2 * PAD + 4) // (seg_w + 4))
-    x = (W - n * seg_w - (n - 1) * 4) / 2
-    for _ in range(n):
-        out.append(f'<svg x="{x:.1f}" y="{y}" width="{seg_w:.1f}" height="{seg_h:.1f}" viewBox="-475 28 450 64">'
-                   f'<g transform="rotate(90)"><use href="#art"/></g></svg>')
-        x += seg_w + 4
-    out.append("</g>")
-    return "".join(out)
-
-
-def snow(height, count, rng):
-    flakes = []
-    for _ in range(count):
-        x = rng.uniform(0, W)
-        r = rng.choice([1.1, 1.5, 1.9, 2.3, 2.8])
-        dur = rng.uniform(26, 48) * (3.2 / (r + 0.6))
-        delay = -rng.uniform(0, dur)
-        sway = rng.uniform(10, 30) * rng.choice([-1, 1])
-        op = min(0.4 + 0.15 * r, 0.95)
-        flakes.append(
-            f'<g class="f" style="animation-duration:{dur:.1f}s;animation-delay:{delay:.1f}s">'
-            f'<circle class="s" cx="{x:.0f}" cy="-8" r="{r}" fill="#fff" opacity="{op:.2f}" '
-            f'style="--sx:{sway:.0f}px;animation-duration:{rng.uniform(3, 6):.1f}s"/></g>')
-    return "".join(flakes)
+def header(t):
+    h = 372
+    b = [f'<rect x="{PAD}" y="18" width="{W - 2 * PAD}" height="{h - 36}" rx="10" '
+         f'fill="{t["panel"]}" stroke="{t["faint"]}"/>']
+    for i, c in enumerate(["#ff5f57", "#febc2e", "#28c840"]):
+        b.append(f'<circle cx="{PAD + 22 + i * 18}" cy="38" r="6" fill="{c}"/>')
+    b.append(txt(W / 2, 43, f"{HANDLE}: ~", 13, t["dim"], 400, 'text-anchor="middle"'))
+    b.append(txt(PAD + 22, 80, "$ neofetch", 15, t["accent"], 700))
+    for i, line in enumerate(ART):
+        b.append(txt(PAD + 22, 112 + i * 20, line, 15, t["accent"] if i < len(ART) - 1 else t["dim"]))
+    x = PAD + 340
+    b.append(txt(x, 112, HANDLE, 16, t["accent"], 700))
+    b.append(txt(x, 130, "-" * len(HANDLE), 16, t["dim"]))
+    for i, (k, v) in enumerate(INFO):
+        y = 154 + i * 19
+        b.append(txt(x, y, f"{k}:", 14, t["accent"], 700))
+        b.append(txt(x + 92, y, v, 14, t["fg"]))
+    sy = 154 + len(INFO) * 19 - 2
+    for i, c in enumerate(["#f85149", "#d4a94a", "#3fb950", "#58a6ff", "#bc8cff", "#39c5cf", t["fg"], t["dim"]]):
+        b.append(f'<rect x="{x + i * 26}" y="{sy}" width="24" height="12" fill="{c}"/>')
+    b.append(txt(PAD + 22, h - 36, "$", 15, t["accent"], 700))
+    b.append(f'<rect class="cur" x="{PAD + 40}" y="{h - 49}" width="9" height="16" fill="{t["fg"]}"/>')
+    css = ".cur{animation:blink 1.1s steps(1) infinite}@keyframes blink{50%{opacity:0}}"
+    return svg(h, t, "".join(b), css)
 
 
-def build():
-    rng = random.Random(7)
-    body = []
-    y = 0
+def whoami(t):
+    h = 100 + 26 * len(WHOAMI)
+    b = [heading(t, "01", "whoami", "~/01-whoami")]
+    for i, line in enumerate(WHOAMI):
+        b.append(txt(PAD, 96 + i * 26, line, 16, t["fg"] if i == 0 else t["dim"]))
+    return svg(h, t, "".join(b))
 
-    # Header: sky, moon, mountains.
-    ridge = [(0, 300), (70, 262), (120, 278), (190, 228), (245, 262), (300, 218), (360, 252),
-             (420, 196), (470, 236), (540, 208), (600, 246), (660, 188), (720, 234), (790, 206),
-             (850, 248), (910, 212), (980, 258), (1000, 250)]
-    ridge_d = "M" + " L".join(f"{a},{b}" for a, b in ridge)
-    body.append('<g class="moon"><circle cx="840" cy="80" r="24" fill="#f6e2a8" mask="url(#cres)"/></g>')
-    body.append(f'<path d="{ridge_d} L1000,360 L0,360 Z" fill="#0a142b"/>')
-    body.append(f'<path class="cap" d="{ridge_d}" fill="none" stroke="#e9f0ff" stroke-width="2" '
-                'stroke-linejoin="round" opacity="0"/>')
-    body.append('<path d="M0,330 C150,312 300,326 450,316 C600,306 750,330 1000,318 L1000,360 L0,360 Z" fill="#081022"/>')
-    body.append('<rect y="318" width="1000" height="110" fill="url(#fade)"/>')
-    body.append(text(PAD, 112, NAME, 52, GOLD, 700, 'letter-spacing="1"'))
-    body.append(f'<rect x="{PAD + 2}" y="130" width="110" height="3" rx="1.5" fill="{GOLD}"/>')
-    body.append(text(PAD, 170, ROLE, 24, "#d8e1f3"))
-    body.append(text(PAD, 202, PLACE, 17, "#8d9ec2"))
-    y = 360
 
-    def section(title):
-        nonlocal y
-        y += 70
-        body.append(ornament_band(y - 34, 0.45))
-        y += 26
-        body.append(text(PAD, y, title.upper(), 15, "#e2b75a", 700, 'letter-spacing="4"'))
-        y += 18
+def system_map(t):
+    h = 530
+    cx, cy = W / 2, 306
+    b = [heading(t, "02", "system map", "~/02-ecosystem"),
+         txt(PAD, 96, "SYSTEM MAP — EVERYTHING FROM ONE PIPELINE", 13, t["fg"], 700, 'letter-spacing="2"'),
+         txt(W - PAD, 96, "FIG. 01", 13, t["fg"], 700, 'text-anchor="end" letter-spacing="2"'),
+         f'<rect x="{PAD}" y="106" width="{W - 2 * PAD}" height="1.5" fill="{t["dim"]}"/>']
+    rx, ry = 296, 150
+    boxes = []
+    for i, (label, sub) in enumerate(NODES):
+        a = -math.pi / 2 + i * 2 * math.pi / len(NODES)
+        nx, ny = cx + rx * math.cos(a), cy + ry * math.sin(a)
+        b.append(f'<line class="flow" x1="{cx:.0f}" y1="{cy:.0f}" x2="{nx:.0f}" y2="{ny:.0f}" '
+                 f'stroke="{t["dim"]}" stroke-width="1.2" stroke-dasharray="3 7"/>')
+        w = max(len(label), len(sub)) * 7.4 + 24
+        boxes.append(f'<rect x="{nx - w / 2:.0f}" y="{ny - 21:.0f}" width="{w:.0f}" height="42" rx="4" '
+                     f'fill="{t["bg"]}" stroke="{t["faint"]}"/>'
+                     + txt(f"{nx:.0f}", f"{ny - 3:.0f}", label, 12, t["fg"], 700, 'text-anchor="middle"')
+                     + txt(f"{nx:.0f}", f"{ny + 13:.0f}", sub, 10.5, t["dim"], 400, 'text-anchor="middle"'))
+    b += boxes
+    b.append(f'<rect x="{cx - 95}" y="{cy - 27}" width="190" height="54" rx="4" '
+             f'fill="{t["panel"]}" stroke="{t["accent"]}"/>')
+    b.append(txt(cx, cy - 4, CORE[0], 15, t["accent"], 700, 'text-anchor="middle"'))
+    b.append(txt(cx, cy + 15, CORE[1], 11, t["dim"], 400, 'text-anchor="middle"'))
+    b.append(f'<rect x="{PAD}" y="{h - 42}" width="{W - 2 * PAD}" height="1.5" fill="{t["dim"]}"/>')
+    b.append(txt(W - PAD, h - 18, "DASHED LINES — DATA IN MOTION", 12, t["fg"], 700,
+                 'text-anchor="end" letter-spacing="2"'))
+    css = ".flow{animation:flow 1.6s linear infinite}@keyframes flow{to{stroke-dashoffset:-20}}"
+    return svg(h, t, "".join(b), css)
 
-    # About
-    section("About")
-    for line in wrap(ABOUT, 22, W - 2 * PAD):
-        y += 32
-        body.append(text(PAD, y, line, 22, "#d8e1f3"))
 
-    # Projects
-    section("Featured")
-    for title, tag, desc in PROJECTS:
-        lines = wrap(desc, 19, W - 2 * PAD - 48)
-        h = 64 + 28 * len(lines)
-        y += 16
-        body.append(f'<rect x="{PAD}" y="{y}" width="{W - 2 * PAD}" height="{h}" rx="14" '
-                    'fill="#0f1c3a" fill-opacity=".72" stroke="#e2b75a" stroke-opacity=".28"/>')
-        body.append(text(PAD + 24, y + 40, title, 24, GOLD, 700))
-        tw = len(title) * 24 * 0.5
-        body.append(f'<rect x="{PAD + 24 + tw + 14:.0f}" y="{y + 21}" width="{len(tag) * 9 + 22}" height="24" rx="12" '
-                    'fill="#e2b75a" fill-opacity=".14"/>')
-        body.append(text(int(PAD + 24 + tw + 25), y + 38, tag, 14, "#e2b75a", 600))
-        ly = y + 40
-        for line in lines:
-            ly += 28
-            body.append(text(PAD + 24, ly, line, 19, "#c3cde4"))
-        y += h
+def projects(t):
+    row = 120
+    h = 84 + row * len(PROJECTS)
+    b = [heading(t, "03", "projects", "~/03-projects")]
+    y = 74
+    for num, name, tag, desc, stack in PROJECTS:
+        b.append(f'<rect x="{PAD}" y="{y}" width="{W - 2 * PAD}" height="1" fill="{t["faint"]}"/>')
+        b.append(txt(PAD, y + 30, num, 14, t["dim"], 700))
+        b.append(txt(PAD + 40, y + 30, name, 16, t["fg"], 700, 'letter-spacing="1"'))
+        tw = len(tag) * 8 + 18
+        b.append(f'<rect x="{W - PAD - tw}" y="{y + 15}" width="{tw}" height="22" rx="3" '
+                 f'fill="none" stroke="{t["accent"]}"/>')
+        b.append(txt(W - PAD - tw / 2, y + 31, tag.upper(), 11, t["accent"], 700, 'text-anchor="middle"'))
+        for i, line in enumerate(desc):
+            b.append(txt(PAD + 40, y + 56 + i * 20, line, 13.5, t["dim"]))
+        b.append(txt(PAD + 40, y + 100, "> " + stack, 12.5, t["accent"]))
+        y += row
+    return svg(h, t, "".join(b))
 
-    # Stack
-    section("Stack")
-    for label, items in STACK:
-        y += 22
-        body.append(text(PAD, y + 22, label, 17, "#8d9ec2", 600))
-        x = PAD + 110
-        for item in items:
-            cw = len(item) * 9.6 + 30
-            if x + cw > W - PAD:
-                x = PAD + 110
-                y += 42
-            body.append(f'<rect x="{x:.0f}" y="{y}" width="{cw:.0f}" height="32" rx="16" '
-                        'fill="#13244a" stroke="#e2b75a" stroke-opacity=".35"/>')
-            body.append(text(int(x + 15), y + 22, item, 17, "#e6ecf8"))
-            x += cw + 10
-        y += 22
 
-    # How I work
-    section("How I work")
-    for line in wrap(HOW_I_WORK, 21, W - 2 * PAD):
-        y += 31
-        body.append(text(PAD, y, line, 21, "#d8e1f3"))
+def stack(t):
+    h = 84 + 34 * len(STACK)
+    b = [heading(t, "04", "stack", "~/04-stack")]
+    for i, (k, v) in enumerate(STACK):
+        y = 98 + i * 34
+        b.append(txt(PAD, y, k, 13, t["accent"], 700, 'letter-spacing="2"'))
+        b.append(txt(PAD + 130, y, v, 15, t["fg"]))
+        b.append(f'<rect x="{PAD}" y="{y + 12}" width="{W - 2 * PAD}" height="1" fill="{t["faint"]}"/>')
+    return svg(h, t, "".join(b))
 
-    # Footer: snowy ground.
-    y += 70
-    body.append(ornament_band(y, 0.6))
-    y += 40
-    height = y + 70
-    body.append(f'<path d="M0,{y + 30} C200,{y + 10} 380,{y + 34} 560,{y + 20} C740,{y + 6} 880,{y + 30} 1000,{y + 18} '
-                f'L1000,{height} L0,{height} Z" fill="#dfe8f8" opacity=".9"/>')
 
-    css = f"""
-.f{{animation:fall linear infinite}}
-.s{{animation:sway ease-in-out infinite alternate}}
-@keyframes fall{{from{{transform:translateY(0)}}to{{transform:translateY({height + 20}px)}}}}
-@keyframes sway{{from{{transform:translateX(0)}}to{{transform:translateX(var(--sx))}}}}
-.moon{{animation:pulse 6s ease-in-out infinite alternate}}
-@keyframes pulse{{from{{opacity:.8}}to{{opacity:1}}}}
-.cap{{animation:cap 40s ease-out forwards}}
-@keyframes cap{{to{{opacity:.45}}}}
-@media (prefers-reduced-motion:reduce){{.f,.s,.moon{{animation:none}}.cap{{opacity:.45}}}}
-text{{font-family:{FONT}}}
-"""
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {height}" width="{W}" height="{height}" role="img" aria-label="{escape(NAME)}: {escape(ROLE)}">
-<defs>
-<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#070d1f"/><stop offset="{360 / height:.3f}" stop-color="#132449"/><stop offset="1" stop-color="#0b1530"/></linearGradient>
-<radialGradient id="glow" cx=".84" cy=".06" r=".35"><stop offset="0" stop-color="#f0cf7e" stop-opacity=".12"/><stop offset="1" stop-color="#f0cf7e" stop-opacity="0"/></radialGradient>
-<linearGradient id="gold" x1="0" x2="1"><stop offset="0" stop-color="#f3d58a"/><stop offset=".5" stop-color="#d4a94a"/><stop offset="1" stop-color="#b8862b"/></linearGradient>
-<linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#081022"/><stop offset=".38" stop-color="#081022"/><stop offset="1" stop-color="#081022" stop-opacity="0"/></linearGradient>
-<mask id="cres"><rect width="{W}" height="200" fill="#fff"/><circle cx="852" cy="72" r="22" fill="#000"/></mask>
-<g id="art" fill="currentColor">{flag_art()}</g>
-</defs>
-<style>{css}</style>
-<rect width="{W}" height="{height}" fill="url(#sky)"/>
-<rect width="{W}" height="{height}" fill="url(#glow)"/>
-<g style="color:#e2b75a">{"".join(body)}</g>
-{snow(height, 240, rng)}
-</svg>
-"""
+def footer(t):
+    h = 74
+    b = [f'<rect x="{PAD}" y="14" width="{W - 2 * PAD}" height="1.5" fill="{t["dim"]}"/>',
+         f'<circle class="dot" cx="{PAD + 6}" cy="45" r="5" fill="#3fb950"/>',
+         txt(PAD + 22, 50, "STATUS: " + STATUS.upper(), 13, t["fg"], 700, 'letter-spacing="1"'),
+         txt(W - PAD, 50, "~/EOF", 13, t["dim"], 400, 'text-anchor="end"')]
+    css = ".dot{animation:pulse 2s ease-in-out infinite}@keyframes pulse{50%{opacity:.35}}"
+    return svg(h, t, "".join(b), css)
 
+
+PARTS = {"header": header, "whoami": whoami, "system-map": system_map,
+         "projects": projects, "stack": stack, "footer": footer}
 
 if __name__ == "__main__":
-    out = ROOT / "assets" / "profile.svg"
-    out.write_text(build(), encoding="utf-8", newline="\n")
-    print(out, out.stat().st_size, "bytes")
+    for theme, t in THEMES.items():
+        out = ROOT / "assets" / theme
+        out.mkdir(parents=True, exist_ok=True)
+        for name, fn in PARTS.items():
+            (out / f"{name}.svg").write_text(fn(t), encoding="utf-8", newline="\n")
+    print("ok:", ", ".join(PARTS))
