@@ -1,34 +1,34 @@
-<!-- Header -->
-<div align="center">
+# Darhan Semiatov
 
-<img src="assets/eye.svg" alt="Animated code eye" width="100%"/>
+Go backend · AI/LLM engineering · Almaty, Kazakhstan
 
-<img src="assets/profile-scan.svg" alt="Profile scan: animated ASCII portrait and system info" width="100%"/>
+I build Go services that run in production and the ML/LLM pieces around them: scoring models, LLM integrations, Telegram bots.
+4th-year student at Narxoz University, intern at QazCode. Open to Go / AI roles from 2027.
 
-<img src="assets/contribution-activity.svg" alt="Contribution activity with a tiny space ship" width="100%"/>
+### Featured
 
-<img src="assets/about.svg" alt="about" width="100%"/>
+**[Tropa](https://130-61-149-209.sslip.io)**: a map of places around Almaty for going out with friends. It is live and has real users.
+Go, html/template, PostgreSQL (pgx), migrations, SSE chats, Telegram notifications, rate-limited auth, admin moderation. Self-hosted with Docker and Caddy on an Oracle ARM VM, with nightly backups.
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0b1f18?style=flat-square&logo=linkedin&logoColor=2fe0a0)](https://www.linkedin.com/in/darhan-semiyatov-a5171b3a8)
-[![Email](https://img.shields.io/badge/Email-0b1f18?style=flat-square&logo=gmail&logoColor=2fe0a0)](mailto:Semiatov@mail.ru)
-[![Steam](https://img.shields.io/badge/Steam-0b1f18?style=flat-square&logo=steam&logoColor=2fe0a0)](https://steamcommunity.com/profiles/76561199049260484)
-[![Profile views](https://komarev.com/ghpvc/?username=DarkIL1ght&style=flat-square&color=1fa57a&labelColor=0b1f18)](https://github.com/DarkIL1ght)
+**IELTS writing scorer**: a fine-tuned DeBERTa-v3 regressor that scores essays on 4 criteria, exported to ONNX and served by a Python service that a Go app calls.
+The LLM only explains the scores. It does not grade.
 
-<img src="assets/stack.svg" alt="tech stack" width="100%"/>
+**[F1 race winner prediction](https://github.com/DarkIL1ght/ResearchF1Prediction)**: an ML study on historical Formula 1 data. It covers preprocessing, XGBoost, a custom race-level winner accuracy metric, feature importance and a temporal learning curve.
 
-<img src="assets/learning.svg" alt="learning" width="100%"/>
+**Decentrathon 6.0**: I captained a team at a hackathon with about 1,500 participants. In 2 days we built a support copilot for a mobile operator: ticket category and priority classification, plus answers grounded in the knowledge base.
 
-<a href="https://github.com/DarkIL1ght/TextRedactorProjectGo"><img src="assets/repo-TextRedactorProjectGo.svg" alt="TextRedactorProjectGo" width="100%"/></a>
-<a href="https://github.com/DarkIL1ght/TcpSERVER"><img src="assets/repo-TcpSERVER.svg" alt="TcpSERVER" width="100%"/></a>
-<a href="https://github.com/DarkIL1ght/probproj"><img src="assets/repo-probproj.svg" alt="probproj" width="100%"/></a>
-<a href="https://github.com/DarkIL1ght/List-Project"><img src="assets/repo-List-Project.svg" alt="List-Project" width="100%"/></a>
-<a href="https://github.com/DarkIL1ght/qadamplus"><img src="assets/repo-qadamplus.svg" alt="qadamplus" width="100%"/></a>
+*Some of these repositories are private. Happy to walk through the code in an interview.*
 
-<img src="assets/stats.svg" alt="Stats" width="100%"/>
+### Stack
 
-<img src="assets/connect.svg" alt="connect" width="100%"/>
+**Main:** Go · PostgreSQL · Docker · Linux · GitHub Actions · Caddy
+**AI/ML:** Python · PyTorch · ONNX Runtime · LLM APIs (Claude, Gemini, Ollama)
+**Also:** Java · JavaScript · SQL
 
-[![LinkedIn](https://img.shields.io/badge/Let's_connect_on_LinkedIn-0b1f18?style=for-the-badge&logo=linkedin&logoColor=2fe0a0)](https://www.linkedin.com/in/darhan-semiyatov-a5171b3a8)
-[![Email](https://img.shields.io/badge/Drop_me_an_email-0b1f18?style=for-the-badge&logo=gmail&logoColor=2fe0a0)](mailto:Semiatov@mail.ru)
+### How I work
 
-</div>
+Layered architecture (domain → application → adapters), tests on every layer, an `architecture.md` in every repo, and CI before merge.
+
+### Contact
+
+[LinkedIn](https://www.linkedin.com/in/darhan-semiyatov-a5171b3a8) · [Semiatov@mail.ru](mailto:Semiatov@mail.ru)
